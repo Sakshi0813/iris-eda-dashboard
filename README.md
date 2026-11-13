@@ -1,134 +1,223 @@
-# Iris Flower Dataset: Exploratory Data Analysis
+# Iris EDA and Machine Learning Dashboard
 
-A beginner-friendly Python project that explores measurements of three Iris flower species. It loads the data with Pandas, checks its quality, prints useful summaries, and saves charts for visual exploration.
+A beginner-friendly Data Science project that combines exploratory data analysis (EDA), interactive visualizations, and supervised Iris species classification in a Streamlit dashboard. The project includes both a command-line EDA workflow and saved scikit-learn models for evaluation and interactive predictions.
 
-## Project structure
+> **Project status:** Local project. No deployed application or public dashboard link is currently configured.
+
+## Table of contents
+
+- [Project overview](#project-overview)
+- [Project objectives](#project-objectives)
+- [Technologies used](#technologies-used)
+- [Dataset information](#dataset-information)
+- [Project workflow](#project-workflow)
+- [Features](#features)
+- [Machine learning models](#machine-learning-models)
+- [Project folder structure](#project-folder-structure)
+- [Installation and setup](#installation-and-setup)
+- [How to use](#how-to-use)
+- [Results and key insights](#results-and-key-insights)
+- [Future improvements](#future-improvements)
+- [Author](#author)
+- [License](#license)
+
+## Project overview
+
+Exploratory Data Analysis helps us understand a dataset before drawing conclusions or building a model. This project loads Iris flower measurements, checks the data, calculates summary statistics, and presents patterns in charts. It also trains two classification models to estimate a flower's species from its measurements.
+
+The Streamlit application brings these tasks together in a filterable dashboard. It is intended as a learning project and portfolio example; its predictions are estimates and are not guaranteed to be correct.
+
+## Project objectives
+
+- Load and inspect the supplied Iris dataset.
+- Check data types, missing values, and repeated records without silently deleting duplicates.
+- Calculate descriptive and species-wise statistics.
+- Explore measurement distributions and relationships through charts.
+- Train and evaluate Decision Tree and Random Forest classifiers.
+- Provide an interactive dashboard for exploration, model comparison, and species prediction.
+
+## Technologies used
+
+| Technology | Use in this project |
+| --- | --- |
+| Python | Project scripts and dashboard logic |
+| Pandas | Reading, filtering, grouping, and summarizing tabular data |
+| NumPy | Numeric validation and array operations |
+| Matplotlib | EDA chart generation and dashboard figures |
+| Seaborn | Statistical plots, including histograms, pair plots, and violin plots |
+| Altair | Interactive dashboard charts |
+| Scikit-learn | Data splitting, preprocessing pipelines, classifiers, and evaluation metrics |
+| Joblib | Saving and loading trained model artifacts |
+| Streamlit | Interactive web dashboard |
+
+## Dataset information
+
+The project uses the [Iris dataset from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/53/iris). The supplied `data/iris.data` file is included, so the EDA script does not need to download it. The project CSV, `iris.csv`, contains **150 records** and **5 columns**. The three species have 50 records each.
+
+| Column | Description | Data role |
+| --- | --- | --- |
+| `sepal_length_cm` | Sepal length, in centimeters | Numerical feature |
+| `sepal_width_cm` | Sepal width, in centimeters | Numerical feature |
+| `petal_length_cm` | Petal length, in centimeters | Numerical feature |
+| `petal_width_cm` | Petal width, in centimeters | Numerical feature |
+| `species` | Setosa, Versicolor, or Virginica | Target label |
+
+The current CSV has **0 missing cells** and **3 duplicate rows** (extra copies across two exact-match groups). The EDA and model workflow retain all 150 records. For model evaluation, identical rows are kept in the same split group so an exact copy cannot appear in both the training and test sets.
+
+## Project workflow
+
+1. **Load the dataset:** `iris_eda.py` reads `data/iris.data` with Pandas, assigns column names, normalizes the species labels, and writes `iris.csv`. The dashboard and `ml_model.py` read `iris.csv` without writing to it.
+2. **Prepare and inspect data:** The EDA script checks numeric values and reports shape, column information, missing values, and duplicates. The dashboard offers interactive filters and data-quality details.
+3. **Explore and visualize:** The scripts calculate overall and species-wise summaries and create EDA charts. Dashboard charts respond to species and feature selections.
+4. **Train models:** `ml_model.py` creates a reproducible, stratified 80/20 train/test split and trains a Decision Tree and a Random Forest.
+5. **Evaluate models:** The held-out test rows are used for accuracy, macro precision, macro recall, macro F1-score, classification reports, and confusion matrices.
+6. **Explore predictions:** The Streamlit prediction page accepts four measurements and uses a saved model to return an estimated species.
+
+## Features
+
+- **Dashboard overview:** Shows the filtered dataset preview, species distribution, and data-quality summary.
+- **Dataset exploration:** Displays filtered records, column types, missing counts, duplicate counts, and a CSV download.
+- **Statistical analysis:** Shows mean, median, sample standard deviation, minimum, maximum, quartiles, IQR, and skewness, plus species-wise comparisons. Summary tables can be downloaded as CSV.
+- **Interactive visualizations:** Includes histograms, scatter plots, box plots, violin plots, a Seaborn pair plot, a correlation heatmap, and species distribution charts. Species and numerical-feature filters update the applicable views.
+- **Saved chart gallery:** Displays the existing PNG charts from `outputs/`.
+- **Species comparison:** Compares species counts and measurement averages with bar, donut, grouped-bar, or dot chart styles.
+- **Key insights and outliers:** Calculates filter-dependent correlation and average-value insights, plus IQR-based potential outlier bounds and records. Outlier rows are flagged for review, not removed.
+- **Machine learning comparison:** Compares both saved classifiers in a table and chart; displays classification reports, confusion matrices, and Random Forest feature importance.
+- **Iris prediction:** Accepts sepal and petal measurements in centimeters, lets the user choose a model, and displays its estimated species. Input controls use the observed dataset ranges.
+- **Analysis downloads:** Exports filtered records, statistical comparisons, and outlier analysis data as CSV files.
+
+## Machine learning models
+
+The two scikit-learn models use the four measurement columns to predict `species`:
+
+- **Decision Tree Classifier:** Learns a sequence of feature-based splits.
+- **Random Forest Classifier:** Combines predictions from an ensemble of decision trees.
+
+`ml_model.py` uses a fixed random state of 42 and a stratified 80/20 split. Exact duplicate rows are assigned as groups so they do not cross between training and test data. In the current split, 120 rows are used for training and 30 for testing, with 10 test rows per species. A preprocessing pipeline contains median imputation and standardization; it is fitted on the training data only. The test set is held out from model fitting and is used for evaluation.
+
+The current saved model results are:
+
+| Model | Accuracy | Macro precision | Macro recall | Macro F1-score |
+| --- | ---: | ---: | ---: | ---: |
+| Decision Tree | 0.933 | 0.944 | 0.933 | 0.933 |
+| Random Forest | 0.933 | 0.944 | 0.933 | 0.933 |
+
+The confusion matrix for each model is the same in this saved evaluation: all 10 Setosa and all 10 Versicolor test records were classified correctly; 8 of 10 Virginica records were classified correctly, and 2 were predicted as Versicolor. These values describe one fixed test split of this small dataset. They do not guarantee the same performance on new data.
+
+The saved Random Forest assigns its highest feature importance to petal width (about 0.452), followed by petal length (about 0.411). Feature importance describes how this fitted model uses its inputs; it does not show that a measurement causes a species difference.
+
+## Project folder structure
 
 ```text
 Iris_EDA_Project/
 ├── data/
-│   └── iris.data          # Original UCI data file used as the input
-├── outputs/               # Charts created by the script
-├── iris.csv               # Clean CSV created when the script runs
-├── main.py                # Project entry point
-├── iris_eda.py            # Main analysis script
-├── ml_model.py            # Train, evaluate, save, and load classifiers
-├── models/                # Generated model artifacts (created by training)
+│   └── iris.data
+├── outputs/                         # Nine saved EDA charts
+│   ├── box_plots_by_species.png
+│   ├── correlation_heatmap.png
+│   ├── histogram_*.png              # Four measurement histograms
+│   ├── petal_measurements_scatter.png
+│   ├── sepal_measurements_scatter.png
+│   └── species_counts.png
+├── models/
 │   ├── decision_tree.joblib
 │   └── random_forest.joblib
-├── app.py                 # Interactive EDA and machine learning dashboard
-├── requirements.txt       # Python packages needed
+├── app.py                           # Streamlit EDA and ML dashboard
+├── iris.csv                         # 150-row, 5-column dataset
+├── iris_eda.py                      # EDA and saved chart generation
+├── main.py                          # EDA entry point
+├── ml_model.py                      # Model training, evaluation, and prediction helpers
+├── INTERNSHIP_REPORT.md             # Project internship report
+├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
-## Dataset
+## Installation and setup
 
-The data comes from the [UCI Machine Learning Repository Iris dataset](https://archive.ics.uci.edu/dataset/53/iris). It contains 150 flower records, four measurements in centimeters, and a species label. The included `data/iris.data` file means the analysis can run without downloading the dataset again.
+### 1. Clone the repository
 
-The script uses Pandas to read the source data and writes a tidy, headed copy named `iris.csv` in the project folder. The species names in that CSV are `Setosa`, `Versicolor`, and `Virginica`.
+```bash
+git clone https://github.com/Sakshi0813/iris-eda-dashboard.git
+cd iris-eda-dashboard
+```
 
-## Machine learning workflow
+### 2. Create and activate a virtual environment
 
-The project includes two scikit-learn classifiers: a Decision Tree and a Random Forest. Both use the four centimeter measurements to predict the species. `ml_model.py` reads the existing `iris.csv` without changing it or removing duplicate records.
+**Windows PowerShell:**
 
-The data is divided into training and test portions with a fixed random seed and stratification by species. Exact duplicate rows are assigned to the same split group, so a copy of an identical row cannot leak from training into testing. All source rows are retained. The test set is held out from model fitting and is used once to calculate the reported evaluation scores. Each model uses a pipeline for median imputation and scaling; those preprocessing steps are fitted as part of training on the training portion only.
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
-The dashboard reports accuracy, macro precision, macro recall, macro F1-score, per-species classification reports, and confusion matrices. Macro averaging weights each species equally. Random Forest feature importance shows how much the fitted forest relied on each measurement; it is a model-specific description and does not show causation. Scores are based on this fixed holdout and are not a guarantee of future performance.
+**macOS or Linux:**
 
-### Train models
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-Install project requirements, then run:
+### 3. Install dependencies
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### 4. Train or refresh the saved models
 
 ```bash
 python ml_model.py
 ```
 
-This creates `models/decision_tree.joblib` and `models/random_forest.joblib`. Run this command again after changing the CSV. The dashboard checks that the loaded model was trained from the current CSV and displays an instruction if a model is missing or stale. Joblib model files use Python serialization; only load artifacts created by this project or otherwise trusted sources.
+This creates or refreshes the two files in `models/`. The dashboard does not retrain models during normal page interactions. If a model file is missing or was trained against a different CSV, the dashboard asks you to run this step.
 
-### Run the dashboard and make a prediction
+### 5. Start the dashboard
 
 ```bash
 streamlit run app.py
 ```
 
-Use the **Machine Learning** page to compare model scores, classification reports, confusion matrices, and Random Forest feature importance. Open **Iris Prediction**, choose a saved model, enter sepal length, sepal width, petal length, and petal width in centimeters, and submit the form. Input fields use the dataset's observed minimum and maximum values. The output is a prediction estimate and may be incorrect.
+To run the original command-line EDA and regenerate `iris.csv` and the saved charts, run `python main.py`. That command writes those outputs from `data/iris.data`; the dashboard itself reads the existing CSV without modifying it.
 
-### Expanded project structure
+## How to use
 
-```text
-Iris_EDA_Project/
-├── data/iris.data
-├── outputs/                         # Existing EDA charts
-├── models/                          # Created by `python ml_model.py`
-│   ├── decision_tree.joblib
-│   └── random_forest.joblib
-├── iris.csv                         # Existing data; kept unchanged by the ML module
-├── ml_model.py                      # Training and evaluation code
-├── app.py                           # EDA, model evaluation, and prediction pages
-├── main.py / iris_eda.py            # Existing EDA scripts
-├── requirements.txt
-└── README.md
-```
+1. Start the dashboard using `streamlit run app.py`.
+2. Use the sidebar navigation to open **Overview**, **Data explorer**, **Statistical analysis**, **Species comparison**, **Advanced analysis**, **Charts & gallery**, **Machine Learning**, or **Iris Prediction**.
+3. Select one or more species and measurement features in the sidebar. The relevant data summaries and EDA charts update to reflect those selections. Use **Reset filters** to restore the defaults.
+4. Download filtered records or analysis tables from the pages that provide CSV download buttons.
+5. Open **Machine Learning** to review saved model scores and diagnostics. If the models are missing or stale, train them from the project folder with `python ml_model.py`.
+6. Open **Iris Prediction**, select Decision Tree or Random Forest, enter all four measurements in centimeters within the displayed dataset ranges, and choose **Predict species**. Treat the result as an estimate, not a guaranteed answer.
 
-## What the analysis does
+## Results and key insights
 
-1. Loads the local dataset and saves `iris.csv`.
-2. Prints the first five rows, dataset shape, and column data types.
-3. Checks each column for missing values and counts duplicate rows.
-4. Calculates mean, median, standard deviation, minimum, and maximum for each measurement.
-5. Prints average measurements and flower counts for each species.
-6. Saves histograms, scatter plots, box plots, a species count bar chart, and a correlation heatmap to `outputs/`.
+- The dataset has 150 records, 50 for each species, with no missing cells.
+- There are 3 extra exact duplicate copies in two groups. They are reported and retained; they are not automatically removed.
+- The petal length and petal width measurements have a strong positive correlation in this dataset (Pearson correlation about **0.963**).
+- In the recorded data, Virginica has the highest average petal length (**5.552 cm**) and petal width (**2.026 cm**). Setosa has the lowest average petal length (**1.464 cm**) and width (**0.244 cm**).
+- Both saved classifiers achieved **0.933 accuracy** on the same 30-row held-out test split. The result is useful for demonstrating the workflow, but additional validation would be needed before drawing broader conclusions.
 
-## Duplicate record review
+## Dashboard Screenshots
 
-The included CSV has **3 repeated copies** according to Pandas' default `duplicated()` count. Those copies belong to **2 exact-match groups**, involving 5 rows total. The records below match in all five columns (four measurements and species). Row numbers are one-based; CSV indices are zero-based.
+No dashboard screenshot files are currently available in this project. The PNG files in `outputs/` are individual EDA charts, not captures of the Streamlit dashboard, so they are not shown here as screenshots. Add actual dashboard captures to a `screenshots/` folder and replace these TODOs with relative Markdown image links and captions.
 
-| CSV indices (row numbers) | Sepal length (cm) | Sepal width (cm) | Petal length (cm) | Petal width (cm) | Species | Copies |
-| --- | ---: | ---: | ---: | ---: | --- | ---: |
-| 9, 34, 37 (10, 35, 38) | 4.9 | 3.1 | 1.5 | 0.1 | Setosa | 3 |
-| 101, 142 (102, 143) | 5.8 | 2.7 | 5.1 | 1.9 | Virginica | 2 |
+> **TODO — Dashboard overview:** Add the overview screenshot and a short caption.
 
-Matching measurements and labels do not prove that two rows describe the same physical flower: this dataset has no unique flower identifier, and different flowers can share measurements at the recorded precision. Repeated rows can also arise when data is copied or combined more than once. For this descriptive EDA, the project keeps the original records so its analysis reflects the supplied dataset. The script reports duplicates but does not remove them. If the data is later used for a model or a different analysis, decide whether to deduplicate based on the data's provenance and purpose, and document that choice because repeated rows affect summary statistics and plots.
+> **TODO — Machine Learning:** Add the model comparison screenshot and a short caption.
 
-### Charts created
+> **TODO — Iris Prediction:** Add the prediction page screenshot and a short caption.
 
-- Four measurement histograms
-- Two scatter plots (sepal measurements and petal measurements)
-- One box plot comparing all measurements by species
-- One bar chart showing the number of flowers per species
-- One correlation heatmap for the four numeric measurements
+## Future improvements
 
-## Setup and run
+- Deploy the dashboard and document the hosting setup once deployment is completed.
+- Evaluate models with repeated cross-validation and additional metrics, while continuing to prevent duplicate-row leakage.
+- Add more datasets or a user-provided dataset workflow with validation and clear data-quality reporting.
+- Extend analysis with model calibration, decision-boundary views, or explainability methods.
 
-Use Python 3.9 or newer. From this folder, create and activate a virtual environment if you want to keep project packages separate:
+## Author
 
-```bash
-python -m venv .venv
-```
+**Sakshi** · [GitHub profile](https://github.com/Sakshi0813)
 
-On Windows PowerShell:
+## License
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-Install the packages and run the analysis:
-
-```bash
-python -m pip install -r requirements.txt
-python main.py
-```
-
-The summary appears in the terminal. The script creates or refreshes `iris.csv` and the PNG charts in `outputs/` each time it runs.
-
-## Beginner notes
-
-- A **row** is one flower; a **column** is a measurement or its species label.
-- The **shape** is reported as `(rows, columns)`.
-- The **median** is the middle value after sorting. The **standard deviation** describes how spread out the values are.
-- A **histogram** groups measurements into ranges. A **scatter plot** compares two measurements. A **box plot** summarizes spread. A **bar chart** counts categories. A **correlation heatmap** shows how numeric measurements move together; correlation does not prove cause and effect.
-- A missing-value count above zero means that column has missing data. Duplicate rows are counted, not removed.
-
-## Tools used
-
-Python, Pandas, NumPy, Matplotlib, and Seaborn.
+No `LICENSE` file is currently included in this project, so no open-source license is specified. If you plan to publish or reuse the project, add a license that reflects your intended terms.
